@@ -100,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BraintreeXFSample\BraintreeXFSample.csproj">
-      <Project>{53E759C2-3A55-4CF2-B806-D669D36C80DB}</Project>
+      <Project>{6F03F802-7938-4817-9888-3DC1A93A6916}</Project>
       <Name>BraintreeXFSample</Name>
     </ProjectReference>
   </ItemGroup>
