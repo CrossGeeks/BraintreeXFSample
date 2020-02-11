@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Gms.Wallet;
 using Android.Runtime;
 using BraintreeXFSample.Services;
 using Com.Braintreepayments.Api;
@@ -87,12 +88,9 @@ namespace BraintreeXFSample.Droid.Services
                 BraintreeError cardErrors = errorWithResponse.ErrorFor("creditCard");
                 if (cardErrors != null)
                 {
-                    // There is an issue with the credit card.
                     BraintreeError expirationMonthError = cardErrors.ErrorFor("expirationMonth");
                     if (expirationMonthError != null)
                     {
-                        // There is an issue with the expiration month.
-                        //SetErrorMessage(expirationMonthError.GetMessage());
                         OnTokenizationError?.Invoke(this, expirationMonthError.Message);
                         payTcs?.TrySetException(new System.Exception(expirationMonthError.Message));
 
@@ -108,7 +106,32 @@ namespace BraintreeXFSample.Droid.Services
 
             mBraintreeFragment.RemoveListener(this);
         }
-       
+
+        public async Task<string> TokenizePlatform(double totalPrice, string merchantId)
+        {
+            payTcs = new TaskCompletionSource<string>();
+            if (isReady)
+            {
+                GooglePaymentRequest googlePaymentRequest = new GooglePaymentRequest();
+               
+                googlePaymentRequest.InvokeTransactionInfo(TransactionInfo.NewBuilder()
+                                                           .SetTotalPrice($"{totalPrice}")
+                .SetTotalPriceStatus(WalletConstants.TotalPriceStatusFinal)
+                .SetCurrencyCode("USD")
+                .Build());
+
+                mBraintreeFragment.AddListener(this);
+                GooglePayment.RequestPayment(mBraintreeFragment, googlePaymentRequest);
+            }
+            else
+            {
+                OnTokenizationError?.Invoke(this, "Platform is not ready to accept payments");
+                payTcs.TrySetException(new System.Exception("Platform is not ready to accept payments"));
+
+            }
+
+            return await payTcs.Task;
+        }
 
         public async Task<bool> InitializeAsync(string clientToken)
         {

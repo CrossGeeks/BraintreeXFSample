@@ -14,5 +14,7 @@ namespace BraintreeXFSample.Services
         Task<bool> InitializeAsync(string clientToken);
 
         Task<string> TokenizeCard(string panNumber = "4111111111111111", string expirationMonth = "12", string expirationYear = "2018", string cvv = null);
+
+        Task<string> TokenizePlatform(double totalPrice, string merchantId);
     }
 }

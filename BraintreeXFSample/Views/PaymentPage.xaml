@@ -1,13 +1,54 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:BraintreeXFSample"
              xmlns:fastEntry="clr-namespace:XamarinFastEntrySample.FastEntry;assembly=XamarinFastEntry.Behaviors"
              x:Class="BraintreeXFSample.Views.PaymentPage">
     <ContentPage.Content>
         <ScrollView>
+          <Grid VerticalOptions="CenterAndExpand"  >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="5*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ImageButton Source="ic_creditcard"
+                         Command="{Binding OnPaymentOptionSelected}"
+                         CommandParameter="{x:Static local:PaymentOptionEnum.CreditCard}"
+                         BorderColor="Gray"
+                         BorderWidth="1"
+                         CornerRadius="0"
+                         Grid.Column="0"
+                         Grid.Row="0"/>
+
+              <ImageButton Source="{OnPlatform iOS=ic_applepay, Android=ic_googlepay}"
+                         Command="{Binding OnPaymentOptionSelected}"
+                         CommandParameter="{x:Static local:PaymentOptionEnum.Platform}"
+                         BorderColor="Gray"
+                         BorderWidth="1"
+                         CornerRadius="0"
+                         Grid.Column="1"
+                         Grid.Row="0"/>
+
+
             <Grid  Padding="20"
                    ColumnSpacing="20"
-                   VerticalOptions="CenterAndExpand">
+                   VerticalOptions="CenterAndExpand"
+                   Grid.Column="0"
+                   Grid.Row="1"
+                   Grid.ColumnSpan="2"
+                   IsVisible="False">
+            <Grid.Triggers>
+                <DataTrigger TargetType="Grid"
+                             Binding="{Binding PaymentOptionEnum}"
+                             Value="CreditCard">
+                    <Setter Property="IsVisible" Value="true"/>
+                </DataTrigger>
+            </Grid.Triggers>
              <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -20,7 +61,7 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="5*"/>
             </Grid.ColumnDefinitions>
-              <Label Text="Braintree Sample"
+              <Label Text="Pay with card"
                      FontAttributes="Bold"
                      Grid.Row="0"
                      Grid.Column="0"
@@ -88,6 +129,7 @@
                             HeightRequest="50"
                             Command="{Binding PayCommand}"/>
             </Grid>
+         </Grid>
         </ScrollView>
     </ContentPage.Content>
 </ContentPage>
