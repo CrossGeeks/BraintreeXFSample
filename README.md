@@ -1,6 +1,6 @@
 # Braintree Xamarin Forms Sample
 
-## Blog posts: 
+### Blog posts: 
   - [**Credit Cards**](http://www.xamboy.com/2020/01/28/braintree-integration-in-xamarin-forms-part-1/)
   - [**Apple Pay/GooglePay**](http://www.xamboy.com/2020/02/11/braintree-integration-in-xamarin-forms-part-2/)
 
