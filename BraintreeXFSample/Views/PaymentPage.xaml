@@ -8,8 +8,9 @@
         <ScrollView>
           <Grid VerticalOptions="CenterAndExpand"  >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*"/>
-                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3.3*"/>
+                <ColumnDefinition Width="3.3*"/>
+                <ColumnDefinition Width="3.3*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"/>
@@ -34,13 +35,22 @@
                          Grid.Column="1"
                          Grid.Row="0"/>
 
+            <ImageButton Source="ic_paypal"
+                         Command="{Binding OnPaymentOptionSelected}"
+                         CommandParameter="{x:Static local:PaymentOptionEnum.PayPal}"
+                         BorderColor="Gray"
+                         BorderWidth="1"
+                         CornerRadius="0"
+                         Grid.Column="2"
+                         Grid.Row="0"/>
+
 
             <Grid  Padding="20"
                    ColumnSpacing="20"
                    VerticalOptions="CenterAndExpand"
                    Grid.Column="0"
                    Grid.Row="1"
-                   Grid.ColumnSpan="2"
+                   Grid.ColumnSpan="3"
                    IsVisible="False">
             <Grid.Triggers>
                 <DataTrigger TargetType="Grid"

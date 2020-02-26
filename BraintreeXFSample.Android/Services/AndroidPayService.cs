@@ -41,7 +41,6 @@ namespace BraintreeXFSample.Droid.Services
                 var res = parameter.JavaCast<Java.Lang.Boolean>();
                 isReady = res.BooleanValue();
                 initializeTcs?.TrySetResult(res.BooleanValue());
-
             }
         }
 
@@ -132,6 +131,25 @@ namespace BraintreeXFSample.Droid.Services
 
             return await payTcs.Task;
         }
+
+        public async Task<string> TokenizePayPal()
+        {
+            payTcs = new TaskCompletionSource<string>();
+            if (isReady)
+            {
+                mBraintreeFragment.AddListener(this);
+                PayPal.AuthorizeAccount(mBraintreeFragment);
+            }
+            else
+            {
+                OnTokenizationError?.Invoke(this, "Platform is not ready to accept payments");
+                payTcs.TrySetException(new System.Exception("Platform is not ready to accept payments"));
+
+            }
+
+            return await payTcs.Task;
+        }
+
 
         public async Task<bool> InitializeAsync(string clientToken)
         {

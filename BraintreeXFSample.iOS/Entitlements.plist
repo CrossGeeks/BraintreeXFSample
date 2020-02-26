@@ -5,6 +5,7 @@
 	<key>com.apple.developer.in-app-payments</key>
 	<array>
 		<string></string>
+		<string></string>
 	</array>
 </dict>
 </plist>

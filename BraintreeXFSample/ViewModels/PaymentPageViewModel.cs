@@ -18,7 +18,7 @@ namespace BraintreeXFSample.ViewModels
         public CardInfo CardInfo { get; set; } = new CardInfo();
         IPayService _payService;
 
-        string paymentClientToken= "<<---Payment token here---->>";
+        string paymentClientToken = "<<---Payment token here---->>";
         const string MerchantId = "<<---Merchant ID here---->>";
         const double AmountToPay = 200;
         
@@ -60,6 +60,9 @@ namespace BraintreeXFSample.ViewModels
                                 case PaymentOptionEnum.CreditCard:
                                      await _payService.TokenizeCard(CardInfo.CardNumber.Replace(" ", string.Empty), CardInfo.Expiry.Substring(0, 2), $"{DateTime.Now.ToString("yyyy").Substring(0, 2)}{CardInfo.Expiry.Substring(3, 2)}", CardInfo.Cvv);
                                      break;
+                                case PaymentOptionEnum.PayPal:
+                                    await _payService.TokenizePayPal();
+                                    break;
                                 default:
                                     break;
                             }
