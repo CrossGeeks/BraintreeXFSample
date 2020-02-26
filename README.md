@@ -5,5 +5,5 @@
   - [**Apple Pay/GooglePay**](http://www.xamboy.com/2020/02/11/braintree-integration-in-xamarin-forms-part-2/)
 
 <p align="center">
-<img width="300" height:"700" src="cardSample.gif" title="Android"/>
+<img width="300" height:"700" src="paypalsample.gif" title="Android"/>
 </p>
