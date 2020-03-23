@@ -2,6 +2,6 @@
 {
     public enum PaymentOptionEnum
     {
-        CreditCard, Platform, PayPal
+        CreditCard, Platform, PayPal, DropUI
     }
 }

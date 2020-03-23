@@ -3,6 +3,8 @@ using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
 using Acr.UserDialogs;
+using Android.Content;
+using BraintreeXFSample.Droid.Services;
 
 namespace BraintreeXFSample.Droid
 {
@@ -26,6 +28,12 @@ namespace BraintreeXFSample.Droid
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            AndroidPayService.OnActivityResult(requestCode, resultCode, data);
         }
     }
 }

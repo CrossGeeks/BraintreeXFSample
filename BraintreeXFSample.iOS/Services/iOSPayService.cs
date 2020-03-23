@@ -6,7 +6,10 @@ using Acr.UserDialogs;
 using BraintreeApplePay;
 using BraintreeCard;
 using BraintreeCore;
+using BraintreeDropIn;
 using BraintreePayPal;
+using BraintreeUIKit;
+using BraintreeXFSample.Models;
 using BraintreeXFSample.Services;
 using Foundation;
 using PassKit;
@@ -18,7 +21,15 @@ namespace BraintreeXFSample.iOS.Services
 {
     public class iOSPayService : PKPaymentAuthorizationViewControllerDelegate, IPayService
     {
+        bool isDropUI = false;
+        string _clientToken;
         TaskCompletionSource<string> payTcs;
+        TaskCompletionSource<DropUIResult> dropUiPayTcs;
+        PKPaymentAuthorizationViewController pKPaymentAuthorizationViewController;
+
+        public event EventHandler<DropUIResult> OnDropUISuccessful = delegate { };
+        public event EventHandler<string> OnDropUIError = delegate { };
+
         public event EventHandler<string> OnTokenizationSuccessful = delegate { };
         public event EventHandler<string> OnTokenizationError = delegate { };
 
@@ -35,9 +46,11 @@ namespace BraintreeXFSample.iOS.Services
 
         public async Task<bool> InitializeAsync(string clientToken)
         {
+           
             var initializeTcs = new TaskCompletionSource<bool>();
             try
             {
+                _clientToken = clientToken;
                 braintreeClient = new BTAPIClient(clientToken);
                 isReady = true;
                 initializeTcs.TrySetResult(isReady);
@@ -103,17 +116,25 @@ namespace BraintreeXFSample.iOS.Services
                     }
                     else
                     {
-                        OnTokenizationError?.Invoke(this, "Error: Couldn't create payment request.");
+                        if (!isDropUI)
+                        {
+                            OnTokenizationError?.Invoke(this, "Error: Couldn't create payment request.");
+                        }
+                        
                         payTcs.TrySetException(new Exception("Error: Couldn't create payment request."));
+                        
                     }
                 });
 
             }
             else
             {
-
-                OnTokenizationError?.Invoke(this, "Platform is not ready to accept payments");
+                if (!isDropUI)
+                {
+                    OnTokenizationError?.Invoke(this, "Platform is not ready to accept payments");
+                }
                 payTcs.TrySetException(new Exception("Platform is not ready to accept payments"));
+                
             }
 
             return await payTcs.Task;
@@ -143,17 +164,22 @@ namespace BraintreeXFSample.iOS.Services
                 _viewController = _viewController.PresentedViewController;
 
 
-            var vc = new PKPaymentAuthorizationViewController(paymentRequest);
+            pKPaymentAuthorizationViewController = new PKPaymentAuthorizationViewController(paymentRequest);
             UserDialogs.Instance.HideLoading();
-            if (vc != null)
+            if (pKPaymentAuthorizationViewController != null)
             {
-                vc.Delegate = this;
-                _viewController?.PresentViewController(vc, true, null);
+                pKPaymentAuthorizationViewController.Delegate = this;
+                _viewController?.PresentViewController(pKPaymentAuthorizationViewController, true, null);
             }
             else
             {
-                OnTokenizationError?.Invoke(this, "Error: Payment request is invalid.");
+                if (!isDropUI)
+                {
+                    OnTokenizationError?.Invoke(this, "Error: Payment request is invalid.");
+                }
+
                 payTcs?.SetException(new Exception("Error: Payment request is invalid."));
+
             }
         }
 
@@ -172,7 +198,11 @@ namespace BraintreeXFSample.iOS.Services
                     }
                     else
                     {
-                        OnTokenizationSuccessful?.Invoke(this, tokenizedApplePayPayment.Nonce);
+                        if (!isDropUI)
+                        {
+                            OnTokenizationSuccessful?.Invoke(this, tokenizedApplePayPayment.Nonce);
+                        }
+                        
                         payTcs?.TrySetResult(tokenizedApplePayPayment.Nonce);
                     }
 
@@ -180,7 +210,11 @@ namespace BraintreeXFSample.iOS.Services
                 }
                 else
                 {
-                    OnTokenizationError?.Invoke(this, "Error - Payment tokenization failed");
+                    if (!isDropUI)
+                    {
+                        OnTokenizationError?.Invoke(this, "Error - Payment tokenization failed");
+                    }
+
                     payTcs?.TrySetException(new Exception("Error - Payment tokenization failed"));
 
                     completion(PKPaymentAuthorizationStatus.Failure);
@@ -238,6 +272,92 @@ namespace BraintreeXFSample.iOS.Services
             }
 
             return await payTcs.Task;
+        }
+
+        public async Task<DropUIResult> ShowDropUI(double totalPrice, string merchantId, int resultCode = 1234)
+        {
+            dropUiPayTcs = new TaskCompletionSource<DropUIResult>();
+            if (CanPay)
+            {
+                BTDropInRequest request = new BTDropInRequest();
+                request.Amount = $"{totalPrice}";
+                BTDropInController bTDropInController = new BTDropInController(_clientToken, request, async(controller, result, error) =>
+                   {
+                       if (error == null)
+                       {
+                           if (result.Cancelled)
+                           {
+                               dropUiPayTcs.SetCanceled();
+                           }
+                           else if(result.PaymentOptionType == BTUIKPaymentOptionType.ApplePay)
+                           {
+                            
+                               try
+                               {
+                                   isDropUI = true;
+                                   var nonce= await TokenizePlatform(totalPrice, merchantId);
+
+                                   var dropResult = new DropUIResult()
+                                   {
+                                       Nonce = nonce ?? string.Empty,
+                                       Type = $"{BTUIKPaymentOptionType.ApplePay}"
+                                   };
+                                   OnDropUISuccessful?.Invoke(this, dropResult);
+                                   dropUiPayTcs.TrySetResult(dropResult);
+                               }
+                               catch(TaskCanceledException)
+                               {
+                                   dropUiPayTcs.SetCanceled();
+                               }
+                               catch (Exception exception)
+                               {
+                                   OnDropUIError?.Invoke(this, exception.Message);
+                                   dropUiPayTcs.TrySetException(exception);
+                               }
+                               finally
+                               {
+                                  pKPaymentAuthorizationViewController?.DismissViewController(true, null);
+                                  isDropUI = false;
+                               }
+
+                             
+                           }
+                           else
+                           {
+                               var dropResult = new DropUIResult()
+                               {
+                                   Nonce = result.PaymentMethod?.Nonce ?? string.Empty,
+                                   Type = $"{result.PaymentOptionType}"
+                               };
+                               OnDropUISuccessful?.Invoke(this, dropResult);
+                               dropUiPayTcs.TrySetResult(dropResult);
+                           }
+
+                       }
+                       else
+                       {
+                           OnDropUIError?.Invoke(this, error.Description);
+                           dropUiPayTcs.TrySetException(new Exception(error.Description));
+                       }
+
+                      
+                       controller.DismissViewController(true, null);
+                   });
+
+                var window = UIApplication.SharedApplication.KeyWindow;
+                var _viewController = window.RootViewController;
+                while (_viewController.PresentedViewController != null)
+                    _viewController = _viewController.PresentedViewController;
+
+                _viewController?.PresentViewController(bTDropInController, true, null);
+            }
+            else
+            {
+                OnDropUIError?.Invoke(this, "Platform is not ready to accept payments");
+                dropUiPayTcs.TrySetException(new Exception("Platform is not ready to accept payments"));
+
+            }
+            return await dropUiPayTcs.Task;
         }
     }
 
