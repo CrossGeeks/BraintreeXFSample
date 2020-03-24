@@ -33,6 +33,11 @@ namespace BraintreeXFSample.ViewModels
                     PayCommand.Execute(null);
              });
             GetPaymentConfig();
+
+            _payService.OnTokenizationSuccessful += OnTokenizationSuccessful;
+            _payService.OnTokenizationError += OnTokenizationError;
+            _payService.OnDropUISuccessful += OnDropUISuccessful;
+            _payService.OnTokenizationError += OnDropUIError;
         }
 
         async Task GetPaymentConfig()
@@ -49,9 +54,6 @@ namespace BraintreeXFSample.ViewModels
                 {
                     try
                     {
-                        _payService.OnTokenizationSuccessful += OnTokenizationSuccessful;
-                        _payService.OnTokenizationError += OnTokenizationError;
-
                             switch (PaymentOptionEnum)
                             {
                                 case PaymentOptionEnum.Platform:
@@ -63,9 +65,19 @@ namespace BraintreeXFSample.ViewModels
                                 case PaymentOptionEnum.PayPal:
                                     await _payService.TokenizePayPal();
                                     break;
+                                case PaymentOptionEnum.DropUI:
+                                    UserDialogs.Instance.HideLoading();
+                                    await _payService.ShowDropUI(AmountToPay, MerchantId);
+                                    break;
                                 default:
                                     break;
                             }
+                }
+                catch (TaskCanceledException ex)
+                {
+                    UserDialogs.Instance.HideLoading();
+                    await App.Current.MainPage.DisplayAlert("Error", "Processing was cancelled", "Ok");
+                    System.Diagnostics.Debug.WriteLine(ex);
                 }
                 catch (Exception ex)
                     {
@@ -85,18 +97,28 @@ namespace BraintreeXFSample.ViewModels
                 }
         }
 
+        async void OnDropUIError(object sender, string e)
+        {
+            System.Diagnostics.Debug.WriteLine(e);
+            await App.Current.MainPage.DisplayAlert("Error", "Unable to process payment", "Ok");
+        }
+
+        async void OnDropUISuccessful(object sender, DropUIResult e)
+        {
+            System.Diagnostics.Debug.WriteLine($"Payment Authorized - {e.Nonce} by {e.Type}");
+            await App.Current.MainPage.DisplayAlert("Success", $"Payment Authorized: the token is {e.Nonce} by {e.Type}", "Ok");
+        }
+
         async void OnTokenizationSuccessful(object sender, string e)
         {
-            _payService.OnTokenizationSuccessful -= OnTokenizationSuccessful;
             System.Diagnostics.Debug.WriteLine($"Payment Authorized - {e}");
             UserDialogs.Instance.HideLoading();
-            await App.Current.MainPage.DisplayAlert("Success", $"Payment Authorized: the token is{e}", "Ok");
+            await App.Current.MainPage.DisplayAlert("Success", $"Payment Authorized: the token is {e}", "Ok");
            
         }
 
         async void OnTokenizationError(object sender, string e)
         {
-            _payService.OnTokenizationError -= OnTokenizationError;
             System.Diagnostics.Debug.WriteLine(e);
             UserDialogs.Instance.HideLoading();
             await App.Current.MainPage.DisplayAlert("Error", "Unable to process payment", "Ok");

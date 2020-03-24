@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BraintreeXFSample.Models;
 
 namespace BraintreeXFSample.Services
 {
@@ -8,6 +9,10 @@ namespace BraintreeXFSample.Services
         event EventHandler<string> OnTokenizationSuccessful;
 
         event EventHandler<string> OnTokenizationError;
+
+        event EventHandler<DropUIResult> OnDropUISuccessful;
+
+        event EventHandler<string> OnDropUIError;
 
         bool CanPay { get; }
 
@@ -18,5 +23,7 @@ namespace BraintreeXFSample.Services
         Task<string> TokenizePlatform(double totalPrice, string merchantId);
 
         Task<string> TokenizePayPal();
+
+        Task<DropUIResult> ShowDropUI(double totalPrice, string merchantId, int requestCode = 1234);
     }
 }

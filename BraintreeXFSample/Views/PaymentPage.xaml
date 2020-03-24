@@ -11,6 +11,7 @@
                 <ColumnDefinition Width="3.3*"/>
                 <ColumnDefinition Width="3.3*"/>
                 <ColumnDefinition Width="3.3*"/>
+                <ColumnDefinition Width="3.3*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"/>
@@ -44,13 +45,22 @@
                          Grid.Column="2"
                          Grid.Row="0"/>
 
+         <Button Text="Drop UI"
+                         Command="{Binding OnPaymentOptionSelected}"
+                         CommandParameter="{x:Static local:PaymentOptionEnum.DropUI}"
+                         BorderColor="Gray"
+                         BorderWidth="1"
+                         CornerRadius="0"
+                         Grid.Column="3"
+                         Grid.Row="0"/>
+
 
             <Grid  Padding="20"
                    ColumnSpacing="20"
                    VerticalOptions="CenterAndExpand"
                    Grid.Column="0"
                    Grid.Row="1"
-                   Grid.ColumnSpan="3"
+                   Grid.ColumnSpan="4"
                    IsVisible="False">
             <Grid.Triggers>
                 <DataTrigger TargetType="Grid"
