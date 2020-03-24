@@ -6,5 +6,5 @@
   - [**PayPal**](http://www.xamboy.com/2020/02/28/braintree-integration-in-xamarin-forms-part-3/)
 
 <p align="center">
-<img width="300" height:"700" src="paypalsample.gif" title="Android"/>
+<img width="300" height:"700" src="dropUi.gif" title="Android"/>
 </p>
