@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.App;
 using Android.Runtime;
-using Plugin.CurrentActivity;
 
 namespace BraintreeXFSample.Droid
 {
@@ -20,7 +19,6 @@ namespace BraintreeXFSample.Droid
         public override void OnCreate()
         {
             base.OnCreate();
-            CrossCurrentActivity.Current.Init(this);
 
         }
 

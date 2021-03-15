@@ -280,7 +280,7 @@ namespace BraintreeXFSample.iOS.Services
             if (CanPay)
             {
                 BTDropInRequest request = new BTDropInRequest();
-                request.Amount = $"{totalPrice}";
+
                 BTDropInController bTDropInController = new BTDropInController(_clientToken, request, async(controller, result, error) =>
                    {
                        if (error == null)

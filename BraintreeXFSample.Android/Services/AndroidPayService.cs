@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Gms.Wallet;
 using Android.Runtime;
+using AndroidX.AppCompat.App;
 using BraintreeXFSample.Models;
 using BraintreeXFSample.Services;
 using Com.Braintreepayments.Api;
@@ -11,7 +12,6 @@ using Com.Braintreepayments.Api.Dropin;
 using Com.Braintreepayments.Api.Exceptions;
 using Com.Braintreepayments.Api.Interfaces;
 using Com.Braintreepayments.Api.Models;
-using Plugin.CurrentActivity;
 using Xamarin.Forms;
 
 [assembly: Dependency(typeof(BraintreeXFSample.Droid.Services.AndroidPayService))]
@@ -122,7 +122,7 @@ namespace BraintreeXFSample.Droid.Services
             if (isReady)
             {
                 GooglePaymentRequest googlePaymentRequest = new GooglePaymentRequest();
-               
+
                 googlePaymentRequest.InvokeTransactionInfo(TransactionInfo.NewBuilder()
                                                            .SetTotalPrice($"{totalPrice}")
                 .SetTotalPriceStatus(WalletConstants.TotalPriceStatusFinal)
@@ -148,7 +148,7 @@ namespace BraintreeXFSample.Droid.Services
             if (isReady)
             {
                 mBraintreeFragment.AddListener(this);
-                PayPal.AuthorizeAccount(mBraintreeFragment);
+                PayPal.RequestBillingAgreement(mBraintreeFragment, new PayPalRequest());
             }
             else
             {
@@ -167,8 +167,8 @@ namespace BraintreeXFSample.Droid.Services
             {
                 _clientToken = clientToken;
                 initializeTcs = new TaskCompletionSource<bool>();
-                mBraintreeFragment = BraintreeFragment.NewInstance(CrossCurrentActivity.Current.Activity, clientToken);
-          
+                mBraintreeFragment = BraintreeFragment.NewInstance(Xamarin.Essentials.Platform.CurrentActivity as AppCompatActivity, clientToken);
+
                 GooglePayment.IsReadyToPay(mBraintreeFragment, this);
             }
             catch (InvalidArgumentException e)
@@ -178,7 +178,7 @@ namespace BraintreeXFSample.Droid.Services
             return await initializeTcs.Task;
         }
 
-        public async Task<DropUIResult> ShowDropUI(double totalPrice,string merchantId, int requestCode = 1234)
+        public async Task<DropUIResult> ShowDropUI(double totalPrice, string merchantId, int requestCode = 1234)
         {
 
             if (isReady)
@@ -195,10 +195,9 @@ namespace BraintreeXFSample.Droid.Services
                 .Build());
 
                 DropInRequest dropInRequest = new DropInRequest().ClientToken(_clientToken)
-                                                                 .Amount($"{totalPrice}")
                                                                  .InvokeGooglePaymentRequest(googlePaymentRequest);
 
-                CrossCurrentActivity.Current.Activity.StartActivityForResult(dropInRequest.GetIntent(CrossCurrentActivity.Current.Activity), requestCode);
+                Xamarin.Essentials.Platform.CurrentActivity.StartActivityForResult(dropInRequest.GetIntent(Xamarin.Essentials.Platform.CurrentActivity), requestCode);
             }
             else
             {
@@ -229,9 +228,9 @@ namespace BraintreeXFSample.Droid.Services
 
         public static void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
-            if(requestCode == _requestCode)
+            if (requestCode == _requestCode)
             {
-                if(resultCode == Result.Ok)
+                if (resultCode == Result.Ok)
                 {
                     DropInResult result = data.GetParcelableExtra(DropInResult.ExtraDropInResult).JavaCast<DropInResult>();
                     var dropResult = new DropUIResult()
@@ -242,13 +241,13 @@ namespace BraintreeXFSample.Droid.Services
 
                     CurrentInstance?.SetDropResult(dropResult);
                 }
-                else if(resultCode == Result.Canceled)
+                else if (resultCode == Result.Canceled)
                 {
                     CurrentInstance?.SetDropCanceled();
                 }
                 else
                 {
-                   Exception error= data.GetSerializableExtra(DropInActivity.ExtraError).JavaCast<Java.Lang.Exception>();
+                    Exception error = data.GetSerializableExtra(DropInActivity.ExtraError).JavaCast<Java.Lang.Exception>();
                     CurrentInstance?.SetDropException(error);
                 }
             }
