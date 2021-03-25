@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
-          xmlns:tools="http://schemas.android.com/tools"
-          android:versionCode="1" 
-          android:versionName="1.0" 
-          package="com.crossgeeks.sample">
-	<uses-sdk android:minSdkVersion="26" android:targetSdkVersion="28" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" android:versionCode="1" android:versionName="1.0" package="com.crossgeeks.sample">
+	<uses-sdk android:minSdkVersion="28" android:targetSdkVersion="30" />
 	<application android:label="BraintreeXFSample" tools:replace="android:label">
 		<meta-data android:name="com.google.android.gms.wallet.api.enabled" android:value="true" />
 		<activity android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity" android:launchMode="singleTask">

@@ -148,7 +148,7 @@ namespace BraintreeXFSample.Droid.Services
             if (isReady)
             {
                 mBraintreeFragment.AddListener(this);
-                PayPal.RequestBillingAgreement(mBraintreeFragment, new PayPalRequest());
+                PayPal.RequestOneTimePayment(mBraintreeFragment, new PayPalRequest());
             }
             else
             {
